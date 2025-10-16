@@ -49,9 +49,9 @@ class BookmarkViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        북마크 생성 시 owner 자동 설정
+        북마크 생성 시 owner를 현재 로그인한 사용자로 자동 설정
         """
-        serializer.save()
+        serializer.save(owner=self.request.user)
 
     @action(detail=False, methods=['get'])
     def recent(self, request):

@@ -10,10 +10,6 @@ class BookmarkSerializer(serializers.ModelSerializer):
     ModelSerializer 버전
     총 48줄 (40% 감소!)
     """
-    owner = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=User.objects.all()
-    )
     # ===== Meta 클래스로 필드 자동 생성 =====
     # 기존 7줄 → 4줄로 감소!
     class Meta:
@@ -63,6 +59,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
             )
 
         return clean_title
+
 
     def validate(self, attrs):
         is_public = attrs.get('is_public')
