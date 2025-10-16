@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # DRF 추가
-    'rest_framework',    
+    'rest_framework',
     # 앱 추가
     'bookmarks',
     'rest_framework_simplejwt.token_blacklist',
