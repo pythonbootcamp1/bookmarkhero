@@ -103,7 +103,7 @@ DATABASES = {
 SIMPLE_JWT = {
     # Access Token 수명
     # 짧게 설정하여 보안 강화 (탈취되어도 금방 만료)
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     # 실무 권장: 15분~1시간
     # MVP 단계: 1시간 (개발 편의)
 

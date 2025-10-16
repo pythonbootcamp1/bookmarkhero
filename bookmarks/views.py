@@ -2,9 +2,10 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from .models import Bookmark
 from .serializers import BookmarkSerializer, UserSerializer, RegisterSerializer
+from .permissions import IsOwnerOrReadOnly
 
 class BookmarkViewSet(viewsets.ModelViewSet):
     """
@@ -26,7 +27,7 @@ class BookmarkViewSet(viewsets.ModelViewSet):
     """
     queryset = Bookmark.objects.select_related('owner').all()
     serializer_class = BookmarkSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def get_queryset(self):
         """
@@ -105,7 +106,7 @@ class BookmarkViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -191,3 +192,65 @@ class AuthViewSet(viewsets.GenericViewSet):
         """
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def logout(self, request):
+        """
+        로그아웃
+
+        URL: POST /api/auth/logout/
+        Headers: Authorization: Bearer <access_token>
+
+        요청:
+        {
+            "refresh": "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6I..."
+        }
+
+        응답:
+        {
+            "detail": "로그아웃되었습니다."
+        }
+        """
+        try:
+            # 1. Refresh Token 가져오기
+            refresh_token = request.data.get('refresh')
+
+            if not refresh_token:
+                return Response(
+                    {'detail': 'Refresh token이 필요합니다.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # 2. Refresh Token 블랙리스트에 추가
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            # 내부적으로 token_blacklist_blacklistedtoken 테이블에 추가됨
+
+            return Response(
+                {'detail': '로그아웃되었습니다.'},
+                status=status.HTTP_200_OK
+            )
+
+        except TokenError:
+            return Response(
+                {'detail': '유효하지 않은 토큰입니다.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# 로그아웃 기능을 구현
+# access token / refresh token 을 입력해서 테스트
+# 10:50까지 진행해 보겠습니다!
+
+
+# PUT, PATCH, DELETE 실습 (정상상황) -> REST API 사용법 익히기
+# 1. 토큰 발급
+# 2. 인증 설정(Authoriztion: Bearer <access_token>)
+# 3. PUT, PATCH, DELETE 요청 보내기 -> localhost:8000/api/bookmarks/<대상bookmark id>/ -> PUT, PATCH, DELETE 요청 보내기
+# 4. PUT, PATCH 차이점 확인 -> 전체 수정(전체 내용을 넣어줘야 합니다) vs 부분 수정(수정할 내용만 넣어주면 됩니다)
+# 11:40까지 진행해 보겠습니다.
+
+
+# 권한 부여 실습
+# IsOwnerOrReadOnly or IsOwner 클래스 작성 하고 적용 -> 어떻게 동작하는지 확인
+# 1:50까지 진행해 보겠습니다.
